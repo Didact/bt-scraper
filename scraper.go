@@ -30,12 +30,13 @@ var (
 	from = flag.Int("from", 1, "which book ID to start from (inclusive)")
 	to   = flag.Int("to", 735, "which book ID to stop at (inclusive)")
 	dir  = flag.String("dir", ".", "directory to store files in (no trailing /)")
+	n    = flag.Int("n", 100, "number of concurrent connections")
 )
 
 func main() {
 	flag.Parse()
 	wg := &sync.WaitGroup{}
-	sm := my.NewSemaphore(100)
+	sm := my.NewSemaphore(*n)
 	for i := *from; i <= *to; i++ {
 		wg.Add(1)
 		sm.Request()
