@@ -26,15 +26,23 @@ var once sync.Once
 
 //FLAGS
 var (
-	id   = flag.Int("id", 1, "specific book ID")
-	from = flag.Int("from", 1, "which book ID to start from (inclusive)")
-	to   = flag.Int("to", 735, "which book ID to stop at (inclusive)")
-	dir  = flag.String("dir", ".", "directory to store files in (no trailing /)")
-	n    = flag.Int("n", 100, "number of concurrent connections")
+	id     = flag.Int("id", -1, "specific book ID")
+	from   = flag.Int("from", 1, "which book ID to start from (inclusive)")
+	to     = flag.Int("to", 740, "which book ID to stop at (inclusive). Defaults to the highest index at the last time of updating")
+	dir    = flag.String("dir", ".", "directory to store files in (no trailing /)")
+	n      = flag.Int("n", 100, "number of concurrent connections")
+	images = flag.Bool("images", false, "whether or not to include images as well")
 )
 
 func main() {
 	flag.Parse()
+	if *id != -1 {
+		title := download(f(*id))
+		if title != "" {
+			fmt.Println(title)
+		}
+		return
+	}
 	wg := &sync.WaitGroup{}
 	sm := my.NewSemaphore(*n)
 	for i := *from; i <= *to; i++ {
@@ -57,9 +65,13 @@ func download(series, books string) string {
 		return ""
 	}
 	v := url.Values{}
+	img := "ni"
+	if *images {
+		img = "wi"
+	}
 	v.Add("series", series)
 	v.Add("books", books)
-	v.Add("img", "ni")
+	v.Add("img", img)
 	v.Add("size", "original")
 	v.Add("submit", "")
 	resp, err := http.PostForm(posturl, v)
